@@ -17,8 +17,7 @@ def bit_list_to_hex(bit_message_list: List[Literal[0, 1]]) -> str:
 
     return hex_message
 
-
-def pad_with_zero(bits: List[Literal[0, 1]], expected_length: int, pad_from: Literal['right', 'left']):
+def pad_with_zero(bits: list, expected_length: int, pad_from: Literal['right', 'left']):
     bits_length = len(bits)
     total_loop = abs(expected_length - bits_length)
 

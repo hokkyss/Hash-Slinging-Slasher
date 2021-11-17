@@ -1,22 +1,63 @@
 # RSA Algorithm
 
 import random
+import math
 from textwrap import wrap
 from typing import List
+from utils.message import pad_with_zero
 
-from .utils import PrimeGenerator, pow_mod, inverse_modulo
+from .utils import PrimeGenerator, inverse_modulo
 
-def text_to_block(message: str, n: int) -> List[int]:
-    digits: int = len(str(n))
-    messages: List[int]
-    try:
-        messages = list(map(int, wrap(message, digits)))
-        for block in messages:
-            if (block >= n) or (block < 0):
-                raise ValueError
-    except:
-        messages = list(map(int, wrap(message, digits - 1)))
-    return messages
+class RSA:
+    def __init__(self, n: int, e: int, d: int) -> None:
+        self.__n = n
+        self.__e = e
+        self.__d = d
+        self.digits = len(str(n)) - 1
+    
+    def encrypt(self, message: str) -> str:
+        """
+        `message` is a hexadecimal string
+        pisah jadi beberapa blok, masing-masing `self.digits - 1`
+        """
+        result: List[int] = []
+        plain_number = int(message, 16)
+
+        blocked = self.block_message(plain_number)
+        for block in blocked:
+            result.append(pow(block, self.__d, self.__n))
+
+        return self.to_message(result)
+
+    def decrypt(self, ciphertext: str) -> str:
+        """
+        `ciphertext` is a hexadecimal string
+        """
+        result: List[int] = []
+        cipher_number = int(ciphertext, 16)
+
+        blocked = self.block_message(cipher_number)
+        for block in blocked:
+            result.append(pow(block, self.__e, self.__n))
+
+        return self.to_message(result)
+
+    def block_message(self, number: int) -> List[int]:
+        # To ensure that the block is always < n
+        message = str(number)
+
+        number_of_blocks = math.ceil(len(message) / self.digits)
+        padded_text = "".join(pad_with_zero(list(message), number_of_blocks * self.digits, 'left'))
+
+        messages: List[int]
+        messages = list(map(int, wrap(padded_text, self.digits)))
+        return messages
+    
+    def to_message(self, blocks: List[int]) -> str:
+        result: List[str] = []
+        for block in blocks:
+            result.append(hex(block)[2:].upper().zfill(self.digits))
+        return "".join(result)
 
 def block_to_text(m: List[int], block_size: int) -> str:
     final_m = []
@@ -24,30 +65,6 @@ def block_to_text(m: List[int], block_size: int) -> str:
     for block in m:
         final_m.append(format(block, print_format))
     return "".join(final_m)
-
-# Encrypt the ciphertext with RSA Algorithm
-def rsa_encryption(message: str, n: int, e: int) -> str:
-    block_size = len(str(n))
-    # m = text_to_block(message, block_size)
-    m = text_to_block(message, n)
-    c = []
-    for block in m:
-        ci = pow_mod(block, e, n)
-        c.append(ci)
-    return block_to_text(c, block_size)
-    # return ''.join(list(map(str, c)))
-
-# Decrypt the ciphertext with RSA Algorithm
-def rsa_decryption(ciphertext: str, n: int, d: int) -> str:
-    # block_size = len(str(n))
-    # c = text_to_block(ciphertext, block_size)
-    c = text_to_block(ciphertext, n)
-    m = []
-    for block in c:
-        mi = pow_mod(block, d, n)
-        m.append(mi)
-    # return block_to_text(m, block_size)
-    return ''.join(list(map(str, m)))
 
 # Generate rsa key
 def generate_rsa_key():
@@ -83,8 +100,8 @@ if (__name__ == "__main__"):
     # message = input()
     print("Message\t\t\t:", message)
 
-    ciphertext = rsa_encryption(message, n, e)
+    ciphertext = RSA(n, e, d).encrypt(message)
     print("Ciphertext\t\t:", ciphertext)
 
-    decrypted_m = rsa_decryption(ciphertext, n, d)
+    decrypted_m = RSA(n, e, d).decrypt(ciphertext)
     print("Decrypted\t\t:", decrypted_m)

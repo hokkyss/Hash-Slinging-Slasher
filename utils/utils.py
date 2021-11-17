@@ -1,6 +1,5 @@
 import random
 from textwrap import wrap
-import numpy as np
 from typing import ClassVar, Dict, List, Tuple
 
 class StringEncoder:
@@ -84,11 +83,18 @@ class PrimeGenerator:
         PrimeGenerator.__PRIMES = []
         n = 10000000
         prime = [True] * n
-        for i in range(3, int(n**0.5)+ 1 , 2):
+        for i in range(3, int(n ** 0.5) + 1 , 2):
             if prime[i]:
-                prime[i * i: : 2 * i] = [False]*((n - i * i - 1) // (2 * i) + 1)
+                prime[i * i:: 2 * i] = [False]*((n - i * i - 1) // (2 * i) + 1)
 
         PrimeGenerator.__PRIMES = [2] + [i for i in range(3, n, 2) if prime[i]]
+        ### SECURITY TO PREVENT PRIMES LOWER THAN 16 TO BE GENERATED (RSA)
+        PrimeGenerator.__PRIMES.remove(2)
+        PrimeGenerator.__PRIMES.remove(3)
+        PrimeGenerator.__PRIMES.remove(5)
+        PrimeGenerator.__PRIMES.remove(7)
+        PrimeGenerator.__PRIMES.remove(11)
+        PrimeGenerator.__PRIMES.remove(13)
 
     @staticmethod
     def random():

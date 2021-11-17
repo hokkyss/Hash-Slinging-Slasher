@@ -1,15 +1,15 @@
-def isTrue(x): return x == 1
+from typing import List
+from typing_extensions import Literal
 
+def isTrue(x: Literal[0, 1]): return x == 1
 
-def if_(i, y, z): return y if isTrue(i) else z
+def if_(i: Literal[0, 1], y, z): return y if isTrue(i) else z
 
+def and_(i: Literal[0, 1], j: Literal[0, 1]): return if_(i, j, 0)
+def AND(i: List[Literal[0, 1]], j: List[Literal[0, 1]]): return [and_(ia, ja) for ia, ja in zip(i, j)]
 
-def and_(i, j): return if_(i, j, 0)
-def AND(i, j): return [and_(ia, ja) for ia, ja in zip(i, j)]
-
-
-def not_(i): return if_(i, 0, 1)
-def NOT(i): return [not_(x) for x in i]
+def not_(i: Literal[0, 1]): return if_(i, 0, 1)
+def NOT(i: List[Literal[0, 1]]): return [not_(x) for x in i]
 
 
 def xor(i, j): return if_(i, not_(j), j)

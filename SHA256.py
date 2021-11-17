@@ -126,7 +126,6 @@ class SHA256:
 
 if __name__ == "__main__":
     sha256 = SHA256('abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq')
-    res = int(sha256.hash())
-    print(res)
-    res1 = int(rsa_encryption(str(res), 6280509711293,9546737))%6280509711293
-    print(res1)
+    print('hash =', sha256.hash())
+    res = int(sha256.hash(), 16)
+    print('int(hash, 16) =', res)
