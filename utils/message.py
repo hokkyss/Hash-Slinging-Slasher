@@ -13,7 +13,7 @@ def bit_list_to_hex(bit_message_list: List[Literal[0, 1]]) -> str:
     message_value_chunk_4 = [
         int('0b' + bytes_message_string[i: i + 4], 2) for i in range(0, len(bytes_message_string), 4)
     ]
-    hex_message = ''.join([hex(val)[2:] for val in message_value_chunk_4])
+    hex_message = ''.join([str(val) for val in message_value_chunk_4])
 
     return hex_message
 
