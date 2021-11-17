@@ -7,11 +7,11 @@ def string_to_bit_list(message: str) -> list:
 
 
 def bit_list_to_hex(bit_message_list: list) -> str:
-    bytes_message_string = ''.join([str(bit) for bit in bit_message_list])
+    bytes_message_string = ''.join([str(int(str(bit),16)) for bit in bit_message_list])
     message_value_chunk_4 = [
         int('0b' + bytes_message_string[i:i+4], 2) for i in range(0, len(bytes_message_string), 4)
     ]
-    hex_message = ''.join([hex(val)[2:] for val in message_value_chunk_4])
+    hex_message = ''.join([str(val) for val in message_value_chunk_4])
 
     return hex_message
 
