@@ -4,8 +4,8 @@ import random
 import math
 from textwrap import wrap
 from typing import List
-from utils.message import pad_with_zero
 
+from .message import pad_with_zero
 from .utils import PrimeGenerator, inverse_modulo
 
 class RSA:
