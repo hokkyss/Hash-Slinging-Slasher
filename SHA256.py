@@ -1,6 +1,4 @@
 import utils as u
-from utils.RSA import rsa_encryption, rsa_decryption
-
 
 class SHA256:
     def __init__(self, message):
@@ -123,9 +121,6 @@ class SHA256:
             digest += u.bit_list_to_hex(val)
         return digest
 
-
 if __name__ == "__main__":
     sha256 = SHA256('abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq')
     print('hash =', sha256.hash())
-    res = int(sha256.hash(), 16)
-    print('int(hash, 16) =', res)

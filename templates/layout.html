@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+
+    <title>Text Document Signer</title>
+</head>
+<body>
+    <header class="site-header">
+      <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
+        <div class="container">
+          <a class="navbar-brand mr-4" href="/">Kriptografi</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarToggle">
+            <div class="navbar-nav mr-auto">
+              <a class="nav-item nav-link" href="/generation">Generate Key</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+    <main role="main" class="container">
+      <div class="row">
+        <div class="col-md-8">
+          {% block content %}{% endblock %}
+        </div>
+        <div class="col-md-4">
+          <div class="content-section">
+            <h3>Key Generation</h3>
+            <form id="cryptography" name="cryptography">
+              <button id="generate">Generate Key!</button><br>
+              <label id="notification"></label>
+            </form>
+          </div>
+          <div class="content-section">
+            <h3>Created by</h3>
+            <p class='text-muted'>IF4020 - Kriptografi
+              <ul class="list-group">
+                <li class="list-group-item list-group-item-light">
+                  <a href="https://github.com/stefanus-lamlo" target="_blank" rel="noopener">Stefanus</a>
+                </li>
+                <li class="list-group-item list-group-item-light">13519101</li>
+                <li class="list-group-item list-group-item-light">
+                  <a href="https://i-am.hokkyss.com" target="_blank" rel="noopener">Hokki Suwanda</a>
+                </li>
+                <li class="list-group-item list-group-item-light">13519143</li>
+                <li class="list-group-item list-group-item-light">
+                  <a href="https://github.com/karelrenaldi" target="_blank" rel="noopener">Karel Renaldi</a>
+                </li>
+                <li class="list-group-item list-group-item-light">13519180</li>
+              </ul>
+            </p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-vtXRMe3mGCbOeY7l30aIg8H9p3GdeSe4IFlP6G8JMa7o7lXvnz3GFKzPxzJdPfGK" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script>
+      const generateKey = function(){
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "{{ url_for('generation') }}");
+        xhr.setRequestHeader("Content-Type", "application/json")
+        xhr.responseType = "json"
+        xhr.send()
+        xhr.onreadystatechange = function(e){
+          if (this.readyState === 4) {
+            if (this.response.error) {
+              alert(this.response.error);
+              return;
+            }
+            document.getElementById("notification").innerText = this.response.result
+
+            if (!this.response.DEV) {
+              download_private = document.createElement("a");
+              download_private.href = this.response.private;
+              download_private.download = this.response.private;
+              download_public = document.createElement("a");
+              download_public.href = this.response.public;
+              download_public.download = this.response.public;
+
+              download_private.click();
+              download_public.click();
+            }
+          }
+        }
+      }
+
+      $('#generate').on('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        generateKey()
+      })
+    </script>
+</body>
+</html>

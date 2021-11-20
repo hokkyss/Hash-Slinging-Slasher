@@ -1,6 +1,4 @@
 # RSA Algorithm
-
-import random
 import math
 from textwrap import wrap
 from typing import List
@@ -59,24 +57,27 @@ class RSA:
             result.append(hex(block)[2:].upper().zfill(self.digits))
         return "".join(result)
 
+    @staticmethod
+    def generate_key():
+        """
+        Generate public key and private key for RSA
+        """
+        p = PrimeGenerator.random()
+        q = PrimeGenerator.random()
+        n = p * q
+        toi = (p - 1) * (q - 1)
+        e = PrimeGenerator.random()
+        d = inverse_modulo(e, toi)
+        public_key = [d, n]
+        private_key = [e, n]
+        return [public_key, private_key]
+
 def block_to_text(m: List[int], block_size: int) -> str:
     final_m = []
     print_format = "0" + str(block_size) + "d"
     for block in m:
         final_m.append(format(block, print_format))
     return "".join(final_m)
-
-# Generate rsa key
-def generate_rsa_key():
-    p = PrimeGenerator.random()
-    q = PrimeGenerator.random()
-    n = p * q
-    toi = (p - 1) * (q - 1)
-    e = PrimeGenerator.random()
-    d = inverse_modulo(e, toi)
-    public_key = [e, n]
-    private_key = [d, n]
-    return [public_key, private_key]
 
 # Main program to test
 if (__name__ == "__main__"):

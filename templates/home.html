@@ -1,0 +1,119 @@
+{% extends "layout.html" %}
+{% block content %}
+  <article class="media content-section">
+      <div class="media-body">
+      <h2><label class="article-title">Asymmetric Encryption</label></h2>
+        <p class="article-content">
+          <form id="cryptography" name="cryptography" onsubmit="execute()" enctype="multipart/form-data">
+            <div class="key-container">
+                <div>
+                    <label><b>Public Key</b></label><br>
+                    <input accept=".pub" type="file" id="public-key-file" name="public-key-file"><br><br>
+                    <label><b>Public Key</b></label><br>
+                    <input type="text" id="public-key" name="public-key"><br><br> 
+                </div>
+                <div>
+                    <label><b>Private Key</b></label><br>
+                    <input accept=".pri" type="file" id="private-key-file" name="private-key-file"><br><br>
+                    <label><b>Private Key</b></label><br>
+                    <input type="text" id="private-key" name="private-key"><br><br>
+                </div>
+            </div>
+            <div class="key-container">
+                <div>
+                    <label><b>Mode</b></label><br>
+                    <input type="radio" name="mode" value="Sign">
+                    <label>Sign</label><br>
+                    <input type="radio" name="mode" value="Verify">
+                    <label>Verify</label><br>
+                </div>
+            </div>
+            <div>
+                <label><b>Input Box</b></label><br>
+                <textarea name="input-box" rows=5 class="text-area-box"></textarea><br><br>
+            </div>
+            <div>
+                <label><b>Result Box</b></label><br>
+                <textarea id="output" name="result-box" rows=5 class="text-area-box" disabled></textarea><br><br>
+            </div>
+            <input id="submit" type="submit" value="Execute"><br>
+          </form>
+        </p>
+      </div>
+    </article>
+    <script
+        src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+        const execute = function(){
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "{{ url_for('execute') }}");
+            xhr.setRequestHeader("Content-Type", "application/json")
+            xhr.responseType = "json"
+            xhr.send(JSON.stringify({
+                    "public-key": $("[name='public-key']").val(),
+                    "private-key": $("[name='private-key']").val(),
+                    "mode": $("[name='mode']:checked").val(),
+                    "input-box": $("[name='input-box']").val()
+            }))
+            xhr.onreadystatechange = function(e){
+                if (this.readyState === 4) {
+                    document.getElementById("output").value = this.response.result
+    
+                    if (this.response.error) alert(this.response.error)
+                }
+            }
+        }
+
+    const getPublicKeyContent = function(){
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "{{ url_for('file_content') }}");
+
+        const formData = new FormData()
+        public_key_file = document.querySelector("input[name='public-key-file']").files[0]
+
+        formData.append('file', public_key_file)
+        xhr.send(formData)
+        xhr.onreadystatechange = function(e) {
+            if (this.readyState === 4) {
+                document.getElementById("public-key").value = this.response;
+            }
+        }
+    }
+
+    const getPrivateKeyContent = function(){
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "{{ url_for('file_content') }}");
+
+        const formData = new FormData()
+        private_key_file = document.querySelector("input[name='private-key-file']").files[0]
+
+        formData.append('file', private_key_file)
+        xhr.send(formData)
+        xhr.onreadystatechange = function(e) {
+            if (this.readyState === 4) {
+                document.getElementById("private-key").value = this.response;
+            }
+        }
+    }
+    $('#public-key-file').on('change', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        getPublicKeyContent();
+    })
+
+    $('#private-key-file').on('change', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        getPrivateKeyContent();
+    })
+
+    $('#submit').on('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        execute()
+    })
+    </script>
+{% endblock content %}
