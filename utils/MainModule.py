@@ -1,6 +1,10 @@
 from typing_extensions import Literal
+from utils.verify import verify
+from utils.SHA256 import SHA256
 from .RSA import *
 from .utils import *
+
+SIGN_PART = '***************SIGNED***************'
 
 # Read the file and return the content of the file
 def readFile(filename: str) -> str:
@@ -26,11 +30,11 @@ def generateKey() -> List[str]:
 
     return [public_key, private_key, f'RSA-{id}']
 
-def proceed(public_key, private_key, mode: Literal['Sign', 'Verify'], message: str):
+def proceed(public_key, private_key, mode: Literal['Sign', 'Verify'], content: str) -> str:
     if not mode:
-        raise ValueError('You must either encrypt or decrypt')
-    if not message:
-        raise ValueError('Input a message.')
+        raise ValueError('You must either sign or verify a *.txt file')
+    if not content:
+        raise ValueError('Input a message or upload a *.txt file.')
 
     if (mode == "Verify"):
         if not public_key:
@@ -42,7 +46,7 @@ def proceed(public_key, private_key, mode: Literal['Sign', 'Verify'], message: s
             raise ValueError('Public key format: <e>, <n>')
             
         e, n = public_key_arr[0], public_key_arr[1]
-        return RSA(n, e, -1).encrypt(message)
+        return verify(content, n, e, -1)
 
     if (mode == "Sign"):
         if not private_key:
@@ -50,7 +54,10 @@ def proceed(public_key, private_key, mode: Literal['Sign', 'Verify'], message: s
         private_key_arr = clean(private_key)
 
         if len(private_key_arr) != 2:
-            raise ValueError('Private key format: <d>, <n>')    
+            raise ValueError('Private key format: <d>, <n>')
+
+        message = SHA256(content).hash()
+        print('hasil hash', message)
 
         d, n = private_key_arr[0], private_key_arr[1]
-        return RSA(n, -1, d).decrypt(message)
+        return f'{SIGN_PART}{RSA(n, -1, d).encrypt(message)}{SIGN_PART}'

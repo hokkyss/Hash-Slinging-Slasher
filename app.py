@@ -8,22 +8,21 @@ from flask import Flask, render_template, request, url_for
 
 DEV = os.getenv("FLASK_ENV", "development") == "development"
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'UNTUK_SESSION'
 
 PrimeGenerator.fill()
 
 @app.route("/generation", methods=['POST'])
 def generation():
-    notification = { "result": "", "public": "", "private": "", "DEV": DEV, "error": "" }
+    notification = { "result": "", "public": "", "private": "", "error": "" }
     try:
         [public_key, private_key, filename] = generateKey()
 
-        full_path = "static/" + filename
-
-        f = open(full_path + ".pub", 'w')
+        f = open(os.path.join(app.static_folder, f'{filename}.pub'), 'w')
         f.write(public_key)
         f.close()
 
-        f = open(full_path + ".pri", 'w')
+        f = open(os.path.join(app.static_folder, f'{filename}.pri'), 'w')
         f.write(private_key)
         f.close()
 
@@ -31,9 +30,8 @@ def generation():
         notification["result"] += "\n\nPublic key : " + public_key
         notification["result"] += "\nPrivate key : " + private_key
 
-        if not DEV:
-            notification["private"] = url_for('static', filename=f'{filename}.pri')
-            notification["public"] = url_for('static', filename=f'{filename}.pub')
+        notification["private"] = url_for('static', filename=f'{filename}.pri')
+        notification["public"] = url_for('static', filename=f'{filename}.pub')
         notification["filename"] = filename
     except ValueError as e:
         notification["error"] = str(e)
@@ -46,7 +44,15 @@ def home():
 
 @app.route("/execute", methods=["POST"])
 def execute():
-    result: Dict[str, str] = { "result": "", "error": None }
+    result: Dict[str, str] = {
+        "result": "",
+        "error": None,
+        "full": None,
+        "sign": None,
+        "content": None,
+        "notification": ""
+    }
+
     try:
         public_key = request.json.get("public-key")
         private_key = request.json.get("private-key")
@@ -56,6 +62,32 @@ def execute():
 
         if not result_box: result_box = ""
         result["result"] = result_box
+
+        if mode == 'Sign':
+            content = input_box + "\n"
+            f = open(os.path.join(app.static_folder, 'content.txt'), 'w')
+            f.write(content)
+            f.close()
+
+            f = open(os.path.join(app.static_folder, f'sign.txt'), 'w')
+            f.write(result_box)
+            f.close()
+
+            f = open(os.path.join(app.static_folder, f'signed.txt'), 'w')
+            f.write(content + result_box)
+            f.close()
+
+            result["full"] = url_for('static', filename='signed.txt')
+            result["sign"] = url_for('static', filename='sign.txt')
+            result["content"] = url_for('static', filename='content.txt')
+            result["notification"] = 'You successfully signed the document. You can download both sign and the content separately.'
+        elif mode == 'Verify':
+            f = open(os.path.join(app.static_folder, 'content.txt'), 'w')
+            f.write(input_box)
+            f.close()
+            result["full"] = url_for('static', filename='content.txt')
+            result["notification"] = 'You can view the content!'
+
     except ValueError as e:
         result["error"] = str(e)
 

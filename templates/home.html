@@ -29,8 +29,8 @@
                 </div>
             </div>
             <div>
-                <label><b>Input Box</b></label><br>
-                <textarea name="input-box" rows=5 class="text-area-box"></textarea><br><br>
+                <label><b>Input Box</b></label><input accept=".txt" type="file" id="input-file" name="input-file" /><br>
+                <textarea id="input-box" name="input-box" rows=5 class="text-area-box"></textarea><br><br>
             </div>
             <div>
                 <label><b>Result Box</b></label><br>
@@ -38,6 +38,11 @@
             </div>
             <input id="submit" type="submit" value="Execute"><br>
           </form>
+          <br />
+
+          <label id="result"></label><br />
+          <button id="download-full" onclick="downloadFull()" disabled>Download File</button>
+          <button id="download-split" onclick="downloadSeparately()" disabled>Download Separately</button>
         </p>
       </div>
     </article>
@@ -47,32 +52,77 @@
         crossorigin="anonymous"></script>
 
     <script type="text/javascript">
-        const execute = function(){
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", "{{ url_for('execute') }}");
-            xhr.setRequestHeader("Content-Type", "application/json")
-            xhr.responseType = "json"
-            xhr.send(JSON.stringify({
-                    "public-key": $("[name='public-key']").val(),
-                    "private-key": $("[name='private-key']").val(),
-                    "mode": $("[name='mode']:checked").val(),
-                    "input-box": $("[name='input-box']").val()
-            }))
-            xhr.onreadystatechange = function(e){
-                if (this.readyState === 4) {
-                    document.getElementById("output").value = this.response.result
-    
-                    if (this.response.error) alert(this.response.error)
+    const wholeFile = document.createElement("a");
+    const signFile = document.createElement("a");
+    const contentFile = document.createElement("a");
+
+    const execute = function(){
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "{{ url_for('execute') }}");
+        xhr.setRequestHeader("Content-Type", "application/json")
+        xhr.responseType = "json"
+        xhr.send(JSON.stringify({
+            "public-key": $("[name='public-key']").val(),
+            "private-key": $("[name='private-key']").val(),
+            "mode": $("[name='mode']:checked").val(),
+            "input-box": $("[name='input-box']").val()
+        }))
+        xhr.onreadystatechange = function(e){
+            if (this.readyState === 4) {
+                if (this.response.error) {
+                    alert(this.response.error);
+                    return;
+                }
+                document.getElementById("output").value = this.response.result
+                document.getElementById("result").innerText = this.response.notification
+
+                wholeFile.href = this.response.full;
+                wholeFile.download = this.response.full;
+                document.getElementById("download-full").disabled = false
+                document.getElementById("download-split").disabled = true
+
+                if (this.response.sign && this.response.content){
+                    signFile.href = this.response.sign;
+                    signFile.download = this.response.sign;
+                    contentFile.href = this.response.content;
+                    contentFile.download = this.response.content;
+                    document.getElementById("download-split").disabled = false
                 }
             }
         }
+    }
+
+    const downloadFull = function(){
+        wholeFile.click();
+    }
+
+    const downloadSeparately = function(){
+        signFile.click();
+        contentFile.click();
+    }
+    
+    const getInputContent = function(){
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "{{ url_for('file_content') }}");
+
+        const formData = new FormData()
+        const inputContent = document.querySelector("input[name='input-file']").files[0]
+
+        formData.append('file', inputContent)
+        xhr.send(formData)
+        xhr.onreadystatechange = function(e) {
+            if (this.readyState === 4) {
+                document.getElementById("input-box").value = this.response;
+            }
+        }
+    }
 
     const getPublicKeyContent = function(){
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "{{ url_for('file_content') }}");
 
         const formData = new FormData()
-        public_key_file = document.querySelector("input[name='public-key-file']").files[0]
+        const public_key_file = document.querySelector("input[name='public-key-file']").files[0]
 
         formData.append('file', public_key_file)
         xhr.send(formData)
@@ -88,7 +138,7 @@
         xhr.open("POST", "{{ url_for('file_content') }}");
 
         const formData = new FormData()
-        private_key_file = document.querySelector("input[name='private-key-file']").files[0]
+        const private_key_file = document.querySelector("input[name='private-key-file']").files[0]
 
         formData.append('file', private_key_file)
         xhr.send(formData)
@@ -98,6 +148,13 @@
             }
         }
     }
+
+    $('#input-file').on('change', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        getInputContent();
+    })
+
     $('#public-key-file').on('change', function(e){
         e.preventDefault();
         e.stopPropagation();

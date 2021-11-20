@@ -3,7 +3,6 @@ import math
 from textwrap import wrap
 from typing import List
 
-from .message import pad_with_zero
 from .utils import PrimeGenerator, inverse_modulo
 
 class RSA:
@@ -45,7 +44,7 @@ class RSA:
         message = str(number)
 
         number_of_blocks = math.ceil(len(message) / self.digits)
-        padded_text = "".join(pad_with_zero(list(message), number_of_blocks * self.digits, 'left'))
+        padded_text = message.zfill(number_of_blocks * self.digits)
 
         messages: List[int]
         messages = list(map(int, wrap(padded_text, self.digits)))
@@ -55,6 +54,7 @@ class RSA:
         result: List[str] = []
         for block in blocks:
             result.append(hex(block)[2:].upper().zfill(self.digits))
+
         return "".join(result)
 
     @staticmethod

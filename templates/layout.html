@@ -20,11 +20,6 @@
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-          <div class="collapse navbar-collapse" id="navbarToggle">
-            <div class="navbar-nav mr-auto">
-              <a class="nav-item nav-link" href="/generation">Generate Key</a>
-            </div>
-          </div>
         </div>
       </nav>
     </header>
@@ -40,6 +35,7 @@
               <button id="generate">Generate Key!</button><br>
               <label id="notification"></label>
             </form>
+            <button id="download-key" onclick="downloadKeys()" disabled>Download key</button>
           </div>
           <div class="content-section">
             <h3>Created by</h3>
@@ -71,6 +67,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
     <script>
+      const download_private_key_file = document.createElement("a")
+      const download_public_key_file = document.createElement("a")
+
+      const downloadKeys = function(){
+        download_private_key_file.click();
+        download_public_key_file.click();
+      }
+
       const generateKey = function(){
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "{{ url_for('generation') }}");
@@ -84,18 +88,12 @@
               return;
             }
             document.getElementById("notification").innerText = this.response.result
+            download_private_key_file.href = this.response.private
+            download_private_key_file.download = this.response.private;
+            download_public_key_file.href = this.response.public;
+            download_public_key_file.download = this.response.public;
 
-            if (!this.response.DEV) {
-              download_private = document.createElement("a");
-              download_private.href = this.response.private;
-              download_private.download = this.response.private;
-              download_public = document.createElement("a");
-              download_public.href = this.response.public;
-              download_public.download = this.response.public;
-
-              download_private.click();
-              download_public.click();
-            }
+            document.getElementById("download-key").disabled = false
           }
         }
       }
