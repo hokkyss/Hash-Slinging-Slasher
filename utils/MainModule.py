@@ -3,6 +3,7 @@ from utils.verify import verify
 from utils.SHA256 import SHA256
 from .RSA import *
 from .utils import *
+from ElGamal import ElGamal_Crypt
 
 SIGN_PART = '***************SIGNED***************'
 
@@ -57,6 +58,8 @@ def proceed(public_key, private_key, mode: Literal['Sign', 'Verify'], content: s
             raise ValueError('Private key format: <d>, <n>')
 
         message = SHA256(content).hash()
+        print(message)
 
         d, n = private_key_arr[0], private_key_arr[1]
-        return f'{SIGN_PART}{RSA(n, -1, d).encrypt(message)}{SIGN_PART}'
+        elGamal = ElGamal_Crypt()
+        return f'{SIGN_PART}{elGamal.encrypt(message,(93851866233028018427063864355698443681,161353274185781293484902195457757752234,253016361123993961339457386024926096871))}{SIGN_PART}'
