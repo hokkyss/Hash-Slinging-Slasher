@@ -57,16 +57,15 @@ def execute():
         public_key = request.json.get("public-key")
         private_key = request.json.get("private-key")
         mode = request.json.get("mode")
-        input_box = request.json.get("input-box")
+        input_box = request.json.get("input-box") + "\n"
         result_box = proceed(public_key, private_key, mode, input_box)
 
         if not result_box: result_box = ""
         result["result"] = result_box
 
         if mode == 'Sign':
-            content = input_box + "\n"
             f = open(os.path.join(app.static_folder, 'content.txt'), 'w')
-            f.write(content)
+            f.write(input_box)
             f.close()
 
             f = open(os.path.join(app.static_folder, f'sign.txt'), 'w')
@@ -74,7 +73,7 @@ def execute():
             f.close()
 
             f = open(os.path.join(app.static_folder, f'signed.txt'), 'w')
-            f.write(content + result_box)
+            f.write(input_box + result_box)
             f.close()
 
             result["full"] = url_for('static', filename='signed.txt')

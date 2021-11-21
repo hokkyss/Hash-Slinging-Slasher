@@ -57,7 +57,6 @@ def proceed(public_key, private_key, mode: Literal['Sign', 'Verify'], content: s
             raise ValueError('Private key format: <d>, <n>')
 
         message = SHA256(content).hash()
-        print('hasil hash', message)
 
         d, n = private_key_arr[0], private_key_arr[1]
         return f'{SIGN_PART}{RSA(n, -1, d).encrypt(message)}{SIGN_PART}'
