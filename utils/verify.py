@@ -23,14 +23,3 @@ def verify(content: str, p: int, x: int) -> str:
         raise ValueError('Sign cannot be verified!')
 
     return message
-
-if __name__ == '__main__':
-    content = "HALO TEMAN-TEMAN SEMUA\r\n\r\n***************SIGNED***************ABCDEF***************SIGNED***************"
-    last_message = content.find(SIGN_PART)
-    last_sign = content.find(SIGN_PART, last_message + len(SIGN_PART))
-    message = content[:last_message]
-    print(message)
-    signature = content[last_message + len(SIGN_PART):last_sign]
-    print(signature)
-    message = bit_list_to_hex(string_to_bit_list(message))
-    print(message)
