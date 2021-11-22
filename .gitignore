@@ -5,3 +5,4 @@ env
 
 *.pri
 *.pub
+static/*.txt
