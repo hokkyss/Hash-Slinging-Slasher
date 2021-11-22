@@ -12,7 +12,7 @@ class PrimeGenerator:
         prime = [True] * n
         for i in range(3, int(n ** 0.5) + 1 , 2):
             if prime[i]:
-                prime[i * i:: 2 * i] = [False]*((n - i * i - 1) // (2 * i) + 1)
+                prime[i * i:: 2 * i] = [False] * ((n - i * i - 1) // (2 * i) + 1)
 
         PrimeGenerator.__PRIMES = [2] + [i for i in range(3, n, 2) if prime[i]]
         ### SECURITY TO PREVENT PRIMES LOWER THAN 16 TO BE GENERATED (RSA)
@@ -51,9 +51,10 @@ def pow_mod(x: int, y: int, p: int) -> int:
     temp: int = pow_mod(x, y // 2, p)
     return (temp * temp * pow_mod(x, y % 2, p)) % p
 
-def gcd(a: int, b: int) -> int:
-    if a == 0: return b
-    return gcd(b % a, a)
+def gcd(x: int, y: int) -> int:
+    while x:
+        x, y = y % x, x
+    return x
 
 def lcm(a: int, b: int) -> int:
     return (a * b) // gcd(a, b)

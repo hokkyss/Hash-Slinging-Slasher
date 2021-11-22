@@ -1,17 +1,11 @@
 from typing_extensions import Literal
+
+from utils.ElGamal import ElGamal
 from utils.verify import verify
 from utils.SHA256 import SHA256
-from .RSA import *
 from .utils import *
-from ElGamal import ElGamal_Crypt
 
 SIGN_PART = '***************SIGNED***************'
-
-# Read the file and return the content of the file
-def readFile(filename: str) -> str:
-    f = open("keys/" + filename, "r")
-    output_text = f.read()
-    return output_text
 
 # Clean the key into list of value contain in key
 def clean(text: str) -> List[int]:
@@ -24,12 +18,12 @@ def generateKey() -> List[str]:
     all_keys = None
     id = random.randint(0, 10000)
 
-    all_keys = RSA.generate_key()
+    all_keys = ElGamal.generate()
 
     public_key = ','.join(list(map(str, all_keys[0])))
     private_key = ','.join(list(map(str, all_keys[1])))
 
-    return [public_key, private_key, f'RSA-{id}']
+    return [public_key, private_key, f'ElGamal-{id}']
 
 def proceed(public_key, private_key, mode: Literal['Sign', 'Verify'], content: str) -> str:
     if not mode:
@@ -38,28 +32,27 @@ def proceed(public_key, private_key, mode: Literal['Sign', 'Verify'], content: s
         raise ValueError('Input a message or upload a *.txt file.')
 
     if (mode == "Verify"):
-        if not public_key:
-            raise ValueError('Public key must not be empty!')
+        if not private_key:
+            raise ValueError('Private key must not be empty!')
 
-        public_key_arr = clean(public_key)
+        private_key_arr = clean(private_key)
             
-        if len(public_key_arr) != 2:
-            raise ValueError('Public key format: <e>, <n>')
+        if len(private_key_arr) != 2:
+            raise ValueError('Public key format: <p>, <x>')
             
-        e, n = public_key_arr[0], public_key_arr[1]
-        return verify(content, n, e, -1)
+        p, x = private_key_arr
+        return verify(content, p, x)
 
     if (mode == "Sign"):
-        if not private_key:
-            raise ValueError('Private key must not be empty')
-        private_key_arr = clean(private_key)
+        if not public_key:
+            raise ValueError('Public must not be empty')
+        public_key_arr = clean(public_key)
 
-        if len(private_key_arr) != 2:
-            raise ValueError('Private key format: <d>, <n>')
+        if len(public_key_arr) != 3:
+            raise ValueError('Private key format: <p>, <g>, <y>')
 
         message = SHA256(content).hash()
-        print(message)
 
-        d, n = private_key_arr[0], private_key_arr[1]
-        elGamal = ElGamal_Crypt()
-        return f'{SIGN_PART}{elGamal.encrypt(message,(93851866233028018427063864355698443681,161353274185781293484902195457757752234,253016361123993961339457386024926096871))}{SIGN_PART}'
+        p, g, y = public_key_arr
+        encrypted = ElGamal.encrypt(message, (p, g, y))
+        return f'{SIGN_PART}{encrypted[0]},{encrypted[1]}{SIGN_PART}'

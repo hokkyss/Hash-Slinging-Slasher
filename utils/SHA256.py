@@ -1,4 +1,5 @@
-import utils as u
+from utils.message import pad_with_zero, string_to_bit_list, chunk_bits, bit_list_to_hex
+from utils.logic import add, XORXOR, AND, rotr, shr, NOT, XOR
 
 class SHA256:
     def __init__(self, message):
@@ -34,12 +35,12 @@ class SHA256:
         words = []
         for byte_value in byte_values:
             word = [int(bit) for bit in byte_value]
-            words.append(u.pad_with_zero(word, 32, 'left'))
+            words.append(pad_with_zero(word, 32, 'left'))
 
         return words
 
     def __preprocess_message(self):
-        bit_list = u.string_to_bit_list(self.message)
+        bit_list = string_to_bit_list(self.message)
         bit_list_length = len(bit_list)
         message_length_bit = [
             int(bit) for bit in bin(bit_list_length)[2:].zfill(64)
@@ -48,26 +49,26 @@ class SHA256:
         bit_list.append(1)
 
         if(bit_list_length < 448):
-            bit_list = u.pad_with_zero(bit_list, 448, 'right')
+            bit_list = pad_with_zero(bit_list, 448, 'right')
             bit_list = bit_list + message_length_bit
 
             return [bit_list]
 
         if(bit_list_length == 448):
-            bit_list = u.pad_with_zero(bit_list, 960, 'right')
+            bit_list = pad_with_zero(bit_list, 960, 'right')
             bit_list = bit_list + message_length_bit
 
-            return u.chunk_bits(list(bit_list), 512)
+            return chunk_bits(list(bit_list), 512)
 
         if(bit_list_length > 448):
             expected_length = bit_list_length
             while(expected_length % 512 != 0):
                 expected_length += 1
 
-            bit_list = u.pad_with_zero(bit_list, expected_length - 64, 'right')
+            bit_list = pad_with_zero(bit_list, expected_length - 64, 'right')
             bit_list = bit_list + message_length_bit
 
-            return u.chunk_bits(list(bit_list), 512)
+            return chunk_bits(list(bit_list), 512)
 
     def hash(self):
         k = self.__initializer(self.K)
@@ -75,15 +76,15 @@ class SHA256:
         chunks = self.__preprocess_message()
 
         for chunk in chunks:
-            w = u.chunk_bits(chunk, 32)
+            w = chunk_bits(chunk, 32)
             for _ in range(48):
                 w.append(32 * [0])
             for i in range(16, 64):
-                s0 = u.XORXOR(u.rotr(w[i-15], 7),
-                              u.rotr(w[i-15], 18), u.shr(w[i-15], 3))
-                s1 = u.XORXOR(u.rotr(w[i-2], 17),
-                              u.rotr(w[i-2], 19), u.shr(w[i-2], 10))
-                w[i] = u.add(u.add(u.add(w[i-16], s0), w[i-7]), s1)
+                s0 = XORXOR(rotr(w[i-15], 7),
+                              rotr(w[i-15], 18), shr(w[i-15], 3))
+                s1 = XORXOR(rotr(w[i-2], 17),
+                              rotr(w[i-2], 19), shr(w[i-2], 10))
+                w[i] = add(add(add(w[i-16], s0), w[i-7]), s1)
             a = h0
             b = h1
             c = h2
@@ -93,32 +94,32 @@ class SHA256:
             g = h6
             h = h7
             for j in range(64):
-                S1 = u.XORXOR(u.rotr(e, 6), u.rotr(e, 11), u.rotr(e, 25))
-                ch = u.XOR(u.AND(e, f), u.AND(u.NOT(e), g))
-                temp1 = u.add(u.add(u.add(u.add(h, S1), ch), k[j]), w[j])
-                S0 = u.XORXOR(u.rotr(a, 2), u.rotr(a, 13), u.rotr(a, 22))
-                m = u.XORXOR(u.AND(a, b), u.AND(a, c), u.AND(b, c))
-                temp2 = u.add(S0, m)
+                S1 = XORXOR(rotr(e, 6), rotr(e, 11), rotr(e, 25))
+                ch = XOR(AND(e, f), AND(NOT(e), g))
+                temp1 = add(add(add(add(h, S1), ch), k[j]), w[j])
+                S0 = XORXOR(rotr(a, 2), rotr(a, 13), rotr(a, 22))
+                m = XORXOR(AND(a, b), AND(a, c), AND(b, c))
+                temp2 = add(S0, m)
                 h = g
                 g = f
                 f = e
-                e = u.add(d, temp1)
+                e = add(d, temp1)
                 d = c
                 c = b
                 b = a
-                a = u.add(temp1, temp2)
-            h0 = u.add(h0, a)
-            h1 = u.add(h1, b)
-            h2 = u.add(h2, c)
-            h3 = u.add(h3, d)
-            h4 = u.add(h4, e)
-            h5 = u.add(h5, f)
-            h6 = u.add(h6, g)
-            h7 = u.add(h7, h)
+                a = add(temp1, temp2)
+            h0 = add(h0, a)
+            h1 = add(h1, b)
+            h2 = add(h2, c)
+            h3 = add(h3, d)
+            h4 = add(h4, e)
+            h5 = add(h5, f)
+            h6 = add(h6, g)
+            h7 = add(h7, h)
 
         digest = ''
         for val in [h0, h1, h2, h3, h4, h5, h6, h7]:
-            digest += u.bit_list_to_hex(val)
+            digest += bit_list_to_hex(val)
         return digest
 
 if __name__ == "__main__":
