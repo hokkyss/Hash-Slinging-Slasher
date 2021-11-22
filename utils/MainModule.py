@@ -38,18 +38,18 @@ def proceed(public_key, private_key, mode: Literal['Sign', 'Verify'], content: s
         private_key_arr = clean(private_key)
             
         if len(private_key_arr) != 2:
-            raise ValueError('Public key format: <p>, <x>')
+            raise ValueError('Private key format: <p>, <x>')
             
         p, x = private_key_arr
         return verify(content, p, x)
 
     if (mode == "Sign"):
         if not public_key:
-            raise ValueError('Public must not be empty')
+            raise ValueError('Public key must not be empty')
         public_key_arr = clean(public_key)
 
         if len(public_key_arr) != 3:
-            raise ValueError('Private key format: <p>, <g>, <y>')
+            raise ValueError('Public key format: <p>, <g>, <y>')
 
         message = SHA256(content).hash()
 
